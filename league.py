@@ -12,8 +12,9 @@ class League:
             self.name = name
             scraper = BundesligaScrape()
             self.df = scraper.scrape()
+            #print(self.df.head())
             blgui = Gui(self.df)
-            blgui.display()
+            blgui.displayTest()
             
 
         if name.lower() == "premier league":
@@ -34,6 +35,7 @@ class League:
 
 def main():
     league = League("bundesliga")
+    
     #print(league)
 
 if __name__ == "__main__":

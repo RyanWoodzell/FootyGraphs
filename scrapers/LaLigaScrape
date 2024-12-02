@@ -1,9 +1,9 @@
 import pandas as pd
-from BundesligaStats import LeagueStats
-class BundesligaScrape:
+
+class LaLigaScrape:
     def __init__(self):
         pass
-    def assign_values(self, data):
+    def assign_logo(self, data):
         # Create a dictionary mapping team names to logo paths
         logo_dict = {
             "Augsburg": r"BLogos\Augsburg.png",
@@ -25,33 +25,9 @@ class BundesligaScrape:
             "Werder Bremen": r"BLogos\Werder Bremen.png",
             "Wolfsburg": r"BLogos\Wolfsburg.png"
         }
-        
-        colors={
-            "Bayern Munich":"#dc052d",
-            "Bochum": "#ADD8E6",
-            "Dortmund": "#ffd900",
-            "RB Leipzig": "#001f47",
-            "Eint Frankfurt": "#E1000F",
-            "Freiburg": "#FD1220",
-            "Gladbach": "#000000",
-            "Heidenheim":"#e2001a",
-            "Hoffenheim": "#1961B5",
-            "Holstein Kiel": "#0F5787",
-            "Leverkusen": "#E32221",
-            "Mainz 05": "#C3141E",
-            "RB Leipzig": "#DD0741",
-            "St. Pauli": "#624839",
-            "Stuttgart": "#E32219",
-            "Union Berlin": "#EB1923",
-            "Werder Bremen": "#009655",
-            "Augsburg": "#ba3733",
-            "Wolfsburg": "#52a600",
-        }
 
-        data["Colors"] = data["Squad"].map(colors)
+        # Assign the correct logo path to each team
         data["LogoPaths"] = data["Squad"].map(logo_dict)
-        print(data["Colors"])
-        print(data[["Rk","Squad"]])
         return data
     def scrape(self):
         try:
@@ -61,7 +37,7 @@ class BundesligaScrape:
             
             if df_list:
                 df = df_list[0]
-                df=self.assign_values(df)
+                df=self.assign_logo(df)
                 df.drop("Notes", axis=1, inplace=True)
 
                 print(df.head())

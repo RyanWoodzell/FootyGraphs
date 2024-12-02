@@ -1,0 +1,55 @@
+import pandas as pd
+
+
+class PLScrape:
+    def __init__(self):
+        pass
+    def assign_logo(self, data):
+        # Create a dictionary mapping team names to logo paths
+        logo_dict = {
+            "Liverpool": r"PLLogos\Liverpool.png",
+            "Arsenal": r"PLLogos\Arsenal.png",
+            "Brighton": r"PLLogos\Liverpool.png",
+            "Manchester City": r"PLLogos\ManCity.png",####REMEMBER TO CHANGE THIS
+            "Chelsea": r"PLLogos\Chelsea.png",
+            "Nott'ham Forest": r"PLLogos\NottForest.png",###CHECK
+            "Brentford": r"PLLogos\Brentford.png",
+            "Tottenham": r"PLLogos\Tottenham.png",
+            "Aston Villa": r"PLLogos\AstonVilla.png",
+            "Newcastle Utd": r"PLLogos\Newcastle.png",
+            "Bournemouth": r"PLLogos\Bournemouth.png",
+            "Fulham": r"PLLogos\Fulham.png",
+            "Manchester Utd": r"PLLogos\ManUtd.png",
+            "West Ham": r"PLLogos\WestHam.png",
+            "Everton": r"PLLogos\Everton.png",
+            "Leicester City": r"PLLogos\Leicester.png",
+            "Crystal Palace": r"PLLogos\CrystalPalace.png",
+            "Southampton": r"PLLogos\Southampton.png",
+            "Wolves": r"PLLogos\Wolves.png",
+            "Ipswich Town": r"PLLogos\Ipswich.png",
+            
+        }
+
+        # Assign the correct logo path to each team
+        data["LogoPaths"] = data["Squad"].map(logo_dict)
+        return data
+    def scrape(self):
+        try:
+            url = "https://fbref.com/en/comps/9/Premier-League-Stats"
+            table_id = id="results2024-202591_overall"
+            df_list = pd.read_html(url, attrs={"id": table_id})
+            
+            if df_list:
+                df = df_list[0]
+                df=self.assign_logo(df)
+                df.drop("Notes", axis=1, inplace=True)
+
+                print(df.head())
+                return df
+                # Example usage of LeagueStats
+                league_stats = LeagueStats(df)
+                league_stats.highestXG()
+            else:
+                print(f"No tables found with id '{table_id}'")
+        except Exception as e:
+            print(f"An error occurred: {e}")
