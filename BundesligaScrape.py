@@ -50,26 +50,36 @@ class BundesligaScrape:
 
         data["Colors"] = data["Squad"].map(colors)
         data["LogoPaths"] = data["Squad"].map(logo_dict)
-        print(data["Colors"])
-        print(data[["Rk","Squad"]])
+        #print(data["Colors"])
+        #print(data["Squad"])
         return data
+    
     def scrape(self):
         try:
             url = "https://fbref.com/en/comps/20/Bundesliga-Stats"
             table_id = "results2024-2025201_overall"
-            df_list = pd.read_html(url, attrs={"id": table_id})
-            
-            if df_list:
-                df = df_list[0]
-                df=self.assign_values(df)
-                df.drop("Notes", axis=1, inplace=True)
+            table_id2 = "stats_squads_standard_for"
 
+            df_list = pd.read_html(url, attrs={"id": table_id})
+            df_list2 = pd.read_html(url, attrs={"id": table_id2})
+
+            if df_list and df_list2:
+                df = df_list[0]
+                df = self.assign_values(df)
+                df.drop("Notes", axis=1, inplace=True)
+                
+                df1 = df_list2[0]
+                df1.columns = df1.columns.droplevel(0)
+
+                df = pd.merge(df, df1, on="Squad")
                 print(df.head())
+                
+
+                
                 return df
-                # Example usage of LeagueStats
-                league_stats = LeagueStats(df)
-                league_stats.highestXG()
             else:
-                print(f"No tables found with id '{table_id}'")
+                print(f"No tables found with ids '{table_id}' or '{table_id2}'")
+                return None, None  # Explicitly return None
         except Exception as e:
             print(f"An error occurred: {e}")
+            return None, None
