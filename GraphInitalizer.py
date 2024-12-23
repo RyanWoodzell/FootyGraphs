@@ -1,6 +1,6 @@
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import tkinter as tk
 import numpy as np
@@ -19,27 +19,28 @@ class Gui:
         self.main_frame.pack(fill=tk.BOTH, expand=True)
 
         #set up title at top of window
-        self.title_label = tk.Label(self.main_frame, text="Bundesliga Stats", font=("Helvetica", 24, "bold"))
+        if self.league == "bundesliga":
+            self.title_label = tk.Label(self.main_frame, text="Bundesliga Stats", font=("Helvetica", 24, "bold"))
+        elif self.league == "premier league":
+            self.title_label = tk.Label(self.main_frame, text="Premier League Stats", font=("Helvetica", 24, "bold"))
         self.title_label.pack(side=tk.TOP, pady=20)
         
         # Create and pack buttons below the title
         self.button_frame = tk.Frame(self.main_frame)
         self.button_frame.pack(side=tk.TOP, fill=tk.X, padx=20, pady=10)
         
-        tk.Button(self.button_frame, text="Plot xG", command=self.plotXG).pack(padx=10)
-        tk.Button(self.button_frame, text="Plot xG Line", command=self.plotGaVSxGA).pack(padx=10)
-        tk.Button(self.button_frame, text="Plot Attendance Heatmap", command=self.plotAttendanceHeatmap).pack(padx=10)
-        tk.Button(self.button_frame, text="Pie", command=self.goalsPie).pack(padx=10)
+        tk.Button(self.button_frame, text="Plot Expected Goals Vs. Actual Goals", command=self.plotXG).pack(padx=10)
+        tk.Button(self.button_frame, text="Plot Expected Goals Against Vs. Actual Goals Against", command=self.plotGaVSxGA).pack(padx=10)
+        tk.Button(self.button_frame, text="View Attendance", command=self.plotAttendanceHeatmap).pack(padx=10)
+        tk.Button(self.button_frame, text="Goals Pie Chart", command=self.goalsPie).pack(padx=10)
         
         
         # Create Matplotlib figure and axis
         self.fig, self.ax = plt.subplots(figsize=(10, 6))
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.main_frame)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        '''
-        toolbar = NavigationToolbar2Tk(self.canvas, self.toolbar_frame)
-        toolbar.pack()
-        '''
+        
+        # Necessary to remove colorbar after initializations
         self.colorbar = None
         
         self.root.mainloop()
@@ -48,11 +49,13 @@ class Gui:
     # Clear the existing canvas if it exists
         if self.canvas.get_tk_widget():
             self.canvas.get_tk_widget().destroy()
-    # Recreate canvas
+
+        # Recreate canvas
         self.fig, self.ax = plt.subplots(figsize=(10, 6))  # Set the size of the Matplotlib figure
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-        #self.canvas.get_tk_widget().grid(row=0, column=0, columnspan=3)
+
+
     def getImage(self, path, zoom=1):
         return OffsetImage(plt.imread(path), zoom=zoom, alpha=0.9)
     
@@ -62,13 +65,17 @@ class Gui:
         if self.colorbar:
             self.colorbar.remove()  # Remove the color bar if it exists
             self.colorbar = None  # Reset the color bar reference
+
+        # Extract data. For some reason bundesliga uses xG_x and premier league uses xG
         if self.league == "bundesliga":
             y = self.df["xG_x"]
         elif self.league == "premier league":
             y = self.df["xG"]
-        y = self.df["xG"]
+
+        #y = self.df["xG"]. USed for test df
         x = self.df["GF"]
         
+        # Set limits for the plot
         x_max = max(x.max() + 5, y.max() + 5)
         self.ax.set_xlim(0, x_max)
         self.ax.set_ylim(0, x_max)
@@ -77,6 +84,7 @@ class Gui:
         line_x = np.linspace(0, x_max, 100)
         self.ax.scatter(x, y)
         
+        # plot line x=y. Line that seperates overperforming and underperforming teams
         self.ax.plot(line_x, line_x, color='red', linestyle='--', label='xG = GF')
 
         # shade regions
@@ -111,7 +119,7 @@ class Gui:
         teams = self.df["Squad"]
         xG = self.df["GA"]
         xGA = self.df["xGA"]
-        logo_paths = self.df["LogoPaths"]  # Assume this column contains paths to the logo images
+        logo_paths = self.df["LogoPaths"] 
 
         # Set positions for the bars
         x = np.arange(len(teams))  # the label locations
@@ -123,7 +131,7 @@ class Gui:
 
         # Set labels and title
         self.ax.set_ylabel("Values")
-        self.ax.set_title("Expected Goals (xG) vs Expected Goals Against (xGA)")
+        self.ax.set_title("Goals Against (GA) vs Expected Goals Against (xGA)")
         self.ax.legend(loc="upper left")
 
         # Replace text tick labels with images
@@ -146,6 +154,7 @@ class Gui:
 
         # Drawing the canvas
         self.canvas.draw()
+
     def goalsPie(self):
         self.clearCanvas()  # Clear the current canvas
 
@@ -199,106 +208,5 @@ class Gui:
         # Adjust layout and redraw canvas
         #self.fig.tight_layout()
         self.canvas.draw()
-    '''
-    def plotDefenseVsOffenseRadar(self, teams_to_compare=None):
-        self.ax.clear()
-        if self.colorbar:
-            self.colorbar.remove()
-            self.colorbar = None
 
-        # Define metrics for radar chart
-        metrics = ["GF", "xG", "GA", "xGA"]
-        
-       # Normalize data for radar chart
-        df_normalized = self.df.copy()
-        for metric in metrics:
-            df_normalized[metric] = (self.df[metric] - self.df[metric].min()) / (self.df[metric].max() - self.df[metric].min())
-
-        # Teams to compare
-        if teams_to_compare is None:
-            teams_to_compare = ["Team1", "Team2"]  # Default comparison (replace with actual team names)
-
-        # Number of variables
-        num_vars = len(metrics)
-
-        # Compute angle for each axis
-        angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()
-        angles += angles[:1]  # Complete the loop
-# Initialize radar chart
-        self.ax = plt.subplot(111, polar=True)
-
-        # Plot each team
-        for team in teams_to_compare:
-            values = df_normalized.loc[self.df["Squad"] == team, metrics].values.flatten().tolist()
-            values += values[:1]  # Complete the loop
-            self.ax.plot(angles, values, label=team)
-            self.ax.fill(angles, values, alpha=0.25)
-
-        # Add labels
-        self.ax.set_yticklabels([])
-        self.ax.set_xticks(angles[:-1])
-        self.ax.set_xticklabels(metrics)
-
-        # Add title and legend
-        self.ax.set_title("Defense vs Offense Radar Chart")
-        self.ax.legend(loc="upper right", bbox_to_anchor=(1.1, 1.1))
-
-        # Draw the canvas
-        self.canvas.draw()
-        '''
-    '''
-    def display(self):
-        self.root.title("Bundesliga Stats")
-
-        # Tkinter Application
-        frame = tk.Frame(self.root)
-        frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
-        label = tk.Label(frame, text="Bundesliga Stats")
-        label.config(font=("Arial", 32))
-        label.pack()
-        #label.grid(row=0, column=0, pady=20)
-
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-
-        toolbar_frame = tk.Frame(frame)
-        toolbar_frame.pack(side=tk.TOP, fill=tk.X)
-        toolbar = NavigationToolbar2Tk(self.canvas, toolbar_frame)
-        toolbar.update()
-        toolbar.pack(side=tk.LEFT, anchor="w")
-
-        tk.Button(frame, text="Plot xG", command=self.plotXG).pack(pady=10)
-        tk.Button(frame, text="Plot xG Line", command=self.plotXGLine).pack(pady=10)
-        tk.Button(frame, text="Plot Attendance Heatmap", command=self.plotAttendanceHeatmap).pack(pady=10)
-        #tk.Button(frame, text="Plot Defense vs Offense Radar", command=self.plotDefenseVsOffenseRadar).pack(pady=10)
-        tk.Button(frame, text="Pie", command=self.goalsPie).pack(pady=10)
-
-        self.root.mainloop() 
-
-    def displayTest(self):
-        self.root.title("Bundesliga Stats")
-        
-        # Create a main frame for the content
-        main_frame = tk.Frame(self.root)
-        main_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-        
-        # Label at the top
-        label = tk.Label(main_frame, text="Bundesliga Stats")
-        label.config(font=("Arial", 32))
-        label.grid(row=0, column=0, pady=20)
-
-        # Canvas for the plot
-        self.canvas.get_tk_widget().grid(row=1, column=0, pady=20)
-
-        # Frame for the buttons
-        button_frame = tk.Frame(main_frame)
-        button_frame.grid(row=2, column=0, pady=10)
-        
-        # Adding buttons
-        tk.Button(button_frame, text="Plot xG", command=self.plotXG).grid(row=0, column=0, padx=10)
-        tk.Button(button_frame, text="Plot xG Line", command=self.plotXGLine).grid(row=0, column=1, padx=10)
-        tk.Button(button_frame, text="Plot Attendance Heatmap", command=self.plotAttendanceHeatmap).grid(row=0, column=2, padx=10)
-        tk.Button(button_frame, text="Pie", command=self.goalsPie).grid(row=0, column=3, padx=10)
-
-        self.root.mainloop()
-        '''
+   

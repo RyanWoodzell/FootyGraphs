@@ -27,7 +27,7 @@ class BundesligaScrape:
             "Wolfsburg": r"Logos\BLogos\Wolfsburg.png"
             
         }
-        
+        #Map colors to each team
         colors={
             "Bayern Munich":"#dc052d",
             "Bochum": "#ADD8E6",
@@ -35,7 +35,7 @@ class BundesligaScrape:
             "RB Leipzig": "#001f47",
             "Eint Frankfurt": "#E1000F",
             "Freiburg": "#FD1220",
-            "Gladbach": "#000000",
+            "Gladbach": "#808080",
             "Heidenheim":"#e2001a",
             "Hoffenheim": "#1961B5",
             "Holstein Kiel": "#0F5787",
@@ -52,8 +52,7 @@ class BundesligaScrape:
         
         data["Colors"] = data["Squad"].map(colors)
         data["LogoPaths"] = data["Squad"].map(logo_dict)
-        #print(data["Colors"])
-        #print(data["Squad"])
+      
         return data
     
     def scrape(self):
@@ -80,10 +79,6 @@ class BundesligaScrape:
                 df1.columns = df1.columns.droplevel(0)
 
                 df = pd.merge(df, df1, on="Squad")
-                #print(df.columns)
-                #print(df)
-                
-                
                 
                 return df
             else:
@@ -92,6 +87,8 @@ class BundesligaScrape:
         except Exception as e:
             print(f"An error occurred: {e}")
             return None, None
+        
+    #Test Function for Github pictures
     def test(self):
         squads = {
                 "Bayern Munich": "#dc052d",

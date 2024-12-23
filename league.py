@@ -1,31 +1,37 @@
 import pandas as pd
 from BundesligaScrape import BundesligaScrape
 from PremScrape import PremScrape
-from test import Gui
+from GraphInitalizer import Gui
 
 class League:
     def __init__(self, name):
+        # Exception Handling
         if name.lower() not in ["bundesliga", "premier league", "la liga", "serie a", "ligue 1", "champions league"]:
             raise ValueError("Invalid league name. Please choose from 'Bundesliga', 'Premier League', 'La Liga', 'Serie A', or 'Ligue 1'")
         self.df = None
         self.df2 = None
         
         if name.lower() == "bundesliga":
+
             self.name = name
+
+            #Scrape the data
             scraper = BundesligaScrape()
             self.df = scraper.test()
-
-            #print(self.df.head())
+            
+            #Display the data
             blgui = Gui(self.df, self.name)
             blgui.displayTest()
             
 
         if name.lower() == "premier league":
             self.name = name
+
+            #Scrape the data
             scraper = PremScrape()
             self.df = scraper.scrape()
 
-            
+            #Display the data
             blgui = Gui(self.df, 'Premier League')
             blgui.displayTest()
             
@@ -37,6 +43,7 @@ class League:
             pass
         self.teams = []
 
+    #Getter methods for testing
     def getdf(self):
         return self.df
     #print the league name
@@ -46,7 +53,6 @@ class League:
 def main():
     league = League("Bundesliga")
     #league = League("Premier League")
-    #print(league)
-
+    
 if __name__ == "__main__":
     main()
