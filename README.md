@@ -28,7 +28,7 @@ This Python program analyzes and visualizes key statistics from teams in the Bun
 
 ## Example Usage
 
-When the program is executed, it scrapes data from Fbref.com about the chosen league. The user is then presented with four different buttons, each of which displaying a different matplotlib plot within the tkinter applcation:
+When the program is executed, it scrapes data from Fbref.com about the chosen league. The example usage is done with the Bundesliga chosen but the program is functional with the Premier League. The user is then presented with four different buttons, each of which displaying a different matplotlib plot within the tkinter applcation:
 
 ### Initial Start
 With randomized data. See [Future Enhancements](#future-enhancements):
