@@ -2,8 +2,8 @@ from PIL import Image
 import os
 
 # Folder paths
-input_folder = "BLogos1"
-output_folder = "BLogos"
+input_folder = "Logos\PremLogos1"
+output_folder = "Logos\PremLogos"
 
 # Create output folder if it doesn't exist
 os.makedirs(output_folder, exist_ok=True)

@@ -7,44 +7,10 @@ import numpy as np
 import pandas as pd
 
 class Gui:
-    def __init__(self, df):
-        '''
-        self.df = df
-        self.root = tk.Tk()
-        self.root.geometry("1200x800")  # Set the size of the Tkinter window
-        self.fig, self.ax = plt.subplots(figsize=(10, 6))  # Set the size of the Matplotlib figure
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-        self.colorbar = None  # Add an instance variable to store the color bar reference
-        '''
-        '''
-        self.df = df
-        self.root = tk.Tk()  # Initialize the Tkinter window
-        self.root.geometry("1200x800")  # Set the window size to 1200x800 pixels
-        
-        # Frame for the canvas
-        self.canvas_frame = tk.Frame(self.root)
-        self.canvas_frame.pack(fill=tk.BOTH, expand=True)
-        
-        # Create the Matplotlib figure and axis
-        self.fig, self.ax = plt.subplots(figsize=(10, 6))
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.canvas_frame)  # Attach the canvas to the frame
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)  # Fill the frame with the canvas
+    def __init__(self, df, league):
 
-        self.colorbar = None  # Initialize the colorbar as None (for heatmaps, if used)
-        
-        # Frame for buttons
-        self.button_frame = tk.Frame(self.root)
-        self.button_frame.pack(side=tk.BOTTOM, fill=tk.X)
-        
-        # Add buttons in the bottom frame
-        tk.Button(self.button_frame, text="Plot xG", command=self.plotXG).pack(side=tk.LEFT, padx=10, pady=10)
-        tk.Button(self.button_frame, text="Plot xG Line", command=self.plotXGLine).pack(side=tk.LEFT, padx=10, pady=10)
-        tk.Button(self.button_frame, text="Plot Attendance Heatmap", command=self.plotAttendanceHeatmap).pack(side=tk.LEFT, padx=10, pady=10)
-        tk.Button(self.button_frame, text="Pie", command=self.goalsPie).pack(side=tk.LEFT, padx=10, pady=10)
-        '''
-        
         self.df = df
+        self.league = league
         self.root = tk.Tk()
         self.root.geometry("1200x800")
         
@@ -60,17 +26,20 @@ class Gui:
         self.button_frame = tk.Frame(self.main_frame)
         self.button_frame.pack(side=tk.TOP, fill=tk.X, padx=20, pady=10)
         
-        tk.Button(self.button_frame, text="Plot xG", command=self.plotXG).pack(side=tk.LEFT, padx=10)
-        tk.Button(self.button_frame, text="Plot xG Line", command=self.plotXGLine).pack(side=tk.LEFT, padx=10)
-        tk.Button(self.button_frame, text="Plot Attendance Heatmap", command=self.plotAttendanceHeatmap).pack(side=tk.LEFT, padx=10)
-        tk.Button(self.button_frame, text="Pie", command=self.goalsPie).pack(side=tk.LEFT, padx=10)
+        tk.Button(self.button_frame, text="Plot xG", command=self.plotXG).pack(padx=10)
+        tk.Button(self.button_frame, text="Plot xG Line", command=self.plotGaVSxGA).pack(padx=10)
+        tk.Button(self.button_frame, text="Plot Attendance Heatmap", command=self.plotAttendanceHeatmap).pack(padx=10)
+        tk.Button(self.button_frame, text="Pie", command=self.goalsPie).pack(padx=10)
         
         
         # Create Matplotlib figure and axis
         self.fig, self.ax = plt.subplots(figsize=(10, 6))
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.main_frame)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-
+        '''
+        toolbar = NavigationToolbar2Tk(self.canvas, self.toolbar_frame)
+        toolbar.pack()
+        '''
         self.colorbar = None
         
         self.root.mainloop()
@@ -93,7 +62,10 @@ class Gui:
         if self.colorbar:
             self.colorbar.remove()  # Remove the color bar if it exists
             self.colorbar = None  # Reset the color bar reference
-
+        if self.league == "bundesliga":
+            y = self.df["xG_x"]
+        elif self.league == "premier league":
+            y = self.df["xG"]
         y = self.df["xG"]
         x = self.df["GF"]
         
@@ -127,7 +99,7 @@ class Gui:
         # Draw the canvas
         self.canvas.draw()
 
-    def plotXGLine(self):
+    def plotGaVSxGA(self):
         
         self.clearCanvas()  # Clear the current canvas
 
@@ -161,7 +133,7 @@ class Gui:
         # Add team logos as tick labels
         for idx, (x_pos, logo_path) in enumerate(zip(x, logo_paths)):
             image = self.getImage(logo_path, zoom=0.065)  # Load the logo image
-            ab = AnnotationBbox(image, (x_pos, -0.1),  # Position below the bars
+            ab = AnnotationBbox(image, (x_pos, 1),  # Position below the bars
                                 frameon=False, box_alignment=(0.5, 0.5))
             self.ax.add_artist(ab)
 
@@ -175,49 +147,24 @@ class Gui:
         # Drawing the canvas
         self.canvas.draw()
     def goalsPie(self):
-
         self.clearCanvas()  # Clear the current canvas
 
-        
-        
-        self.ax.pie(self.df["GF"], labels=self.df["Squad"], colors=self.df["Colors"],  autopct='%1.1f%%', startangle=90)
+        # Plot the pie chart
+        wedges, texts, autotexts = self.ax.pie(self.df["GF"], labels=self.df["Squad"], colors=self.df["Colors"], autopct='%1.1f%%', startangle=90)
         self.ax.set_title("Goals Scored by Team")
-        self.canvas.draw()
-    '''
-    def plotAttendanceHeatmap(self):
-        self.ax.clear()  # Clear the previous plot
-      
-        if self.colorbar:
-            self.colorbar.remove()  # Remove the color bar if it exists
-            self.colorbar = None  # Reset the color bar reference
 
-        # Extract attendance data and team information
-        teams = self.df["Squad"]
-        attendance = self.df["Attendance"].values.reshape(1, -1)  # Reshape to a 1xN array for heatmap
-        logo_paths = self.df["LogoPaths"]  # Paths to team logos
-
-        # Create the heatmap
-        heatmap = self.ax.imshow(attendance, cmap='YlOrRd', aspect='auto')
-
-        # Add color bar
-        self.colorbar = self.fig.colorbar(heatmap, ax=self.ax, orientation='vertical', pad=0.02)
-        self.colorbar.set_label("Attendance", rotation=270, labelpad=15)
-
-        # Customize the axes
-        self.ax.set_xticks(np.arange(len(teams)))  # X-axis tick positions
-        self.ax.set_yticks([])  # Remove Y-axis ticks (we only have 1 row)
-
-        # Replace text tick labels with images
-        self.ax.set_xticklabels([])  # Remove default tick labels
-        for idx, (x_pos, logo_path) in enumerate(zip(np.arange(len(teams)), logo_paths)):
-            image = self.getImage(logo_path, zoom=0.065)  # Load the logo image
-            ab = AnnotationBbox(image, (x_pos, 0),  # Position at the tick
-                                frameon=False, box_alignment=(0.5, -0.1))
+        # Add logos to the pie chart
+        for wedge, logo_path in zip(wedges, self.df["LogoPaths"]):
+            angle = (wedge.theta2 - wedge.theta1) / 2. + wedge.theta1
+            x = np.cos(np.radians(angle))
+            y = np.sin(np.radians(angle))
+            image = self.getImage(logo_path, zoom=0.05)
+            ab = AnnotationBbox(image, (x, y), frameon=False, box_alignment=(0.5, 0.5), xycoords='data', pad=0.1)
             self.ax.add_artist(ab)
 
-        # Drawing the canvas
         self.canvas.draw()
-    '''
+       
+    
     def plotAttendanceHeatmap(self):
         # Clear previous plot
         self.clearCanvas()  # Clear the current canvas

@@ -1,5 +1,6 @@
 import pandas as pd
 from BundesligaScrape import BundesligaScrape
+from PremScrape import PremScrape
 from test import Gui
 
 class League:
@@ -12,15 +13,22 @@ class League:
         if name.lower() == "bundesliga":
             self.name = name
             scraper = BundesligaScrape()
-            self.df = scraper.scrape()
+            self.df = scraper.test()
 
             #print(self.df.head())
-            #blgui = Gui(self.df)
-            #blgui.displayTest()
+            blgui = Gui(self.df, self.name)
+            blgui.displayTest()
             
 
         if name.lower() == "premier league":
-            pass
+            self.name = name
+            scraper = PremScrape()
+            self.df = scraper.scrape()
+
+            
+            blgui = Gui(self.df, 'Premier League')
+            blgui.displayTest()
+            
         if name.lower() == "la liga":
             pass
         if name.lower() == "serie a":
@@ -36,8 +44,8 @@ class League:
         return self.name
 
 def main():
-    league = League("bundesliga")
-    
+    league = League("Bundesliga")
+    #league = League("Premier League")
     #print(league)
 
 if __name__ == "__main__":

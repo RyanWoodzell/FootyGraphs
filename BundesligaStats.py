@@ -3,8 +3,9 @@ from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import numpy as np
 
 class LeagueStats:
-    def __init__(self, data):
+    def __init__(self, data, league):
         self.data = data
+        self.league = league
     
 
     def getImage(self, path, zoom=1):
@@ -25,13 +26,18 @@ class LeagueStats:
 
         #sort data by xG
         topXG = self.data.sort_values(by="xG", ascending=False)
-        topXG = topXG[["Rk", "Squad", "xG", "GF", "LogoPaths"]]
+        topXG = topXG[["Rk", "Squad", "xG_x", "GF", "LogoPaths"]]
         topXG = topXG.reset_index(drop=True)
         topXG.index += 1
         #print(topXG)
         
         #establish x and y points
-        ypoints = topXG["xG"]
+        if self.league == "Bundesliga":
+            ypoints = topXG["xG_x"]
+        elif self.league == "Premier League":
+            ypoints = topXG["xG"]
+        
+        
         xpoints = topXG["GF"]
 
         #establish max value for x and y to divide graph into halves
