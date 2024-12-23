@@ -1,4 +1,4 @@
-# League Stats Program
+# Soccer League Stats
 
 ## Overview
 
