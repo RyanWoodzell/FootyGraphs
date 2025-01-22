@@ -1,4 +1,4 @@
-# Soccer League Stats
+# FootyGraphs
 
 ## Overview
 
